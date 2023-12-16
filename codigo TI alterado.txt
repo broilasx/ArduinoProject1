@@ -1,0 +1,142 @@
+int pos = -1;
+int numerosecreto = 0;
+int BOTAOSIM = 3;
+int BOTAONAO = 4;
+int led1seq = 6; 
+int led2seq = 7; 
+int led3seq = 8; 
+int led4seq = 9; 
+int led5seq = 10;
+int led6seq = 11;
+int led7seq = 12;
+int medicao = 10;
+int ultimobotaosim = LOW;
+int ultimobotaonao = LOW;
+unsigned long ultimamedicao;
+unsigned long tmppressionado;
+unsigned long duracaopress;
+bool pressionado = false;
+int press2seg = 2000;
+
+void setup()
+{
+    for (int i = 6; i < 13; i++) {
+        pinMode(i, OUTPUT);
+    }
+    for (int i = 3; i < 5; i++) {
+        pinMode(i, INPUT_PULLUP);
+    }
+    Serial.begin(9600);
+}
+void loop()
+{
+    if (pos == -1) {
+        Serial.print("Pense num numero entre 0 e 127.\n");
+        Serial.print("Sequencia:\n");
+        for (byte i = 1; i < 128; i++) {
+            if (i & 1 << (pos)) {
+                Serial.print(i);
+                Serial.print(" ");
+            }
+        }
+        Serial.print("\n");
+        Serial.print("O numero esta nesta sequencia?\n");
+        pos++;
+    }
+    if ((millis() - ultimamedicao) > medicao) {
+        int botaosimstate;
+        botaosimstate = !digitalRead(3);
+        if ((botaosimstate == HIGH) && ultimobotaosim == LOW && pressionado == false) {
+
+            tmppressionado = millis();
+            ultimobotaosim = HIGH;
+         }
+        duracaopress = millis() - tmppressionado;
+
+        if (botaosimstate == HIGH && pressionado == false && duracaopress > press2seg) {
+
+            pressionado = true;
+          
+          if(pressionado = true){
+       
+          numerosecreto = 0;
+            pos=-1;
+            for (int i = 6; i < 13; i++) {
+        digitalWrite(i, LOW);
+    }
+      }
+        }
+  //
+        if (botaosimstate == LOW && ultimobotaosim == HIGH) {
+
+            ultimobotaosim = LOW;
+            pressionado = false;
+            if (duracaopress < press2seg) {
+             numerosecreto += 1 << pos;
+             pos++;
+             digitalWrite(pos + 5, HIGH);
+             if (pos < 7) {
+               Serial.println("Sequencia:");
+               for (int i = 1; i < 128; i++) {
+                 if (i & 1 << pos) {
+                   Serial.print(i);
+                   Serial.print(" ");
+                 }
+               }
+              Serial.print("\n");
+              Serial.print("O numero esta nesta sequencia?\n");
+
+              }
+             }
+        }
+        ultimamedicao = millis();
+    }
+  
+  if ((millis() - ultimamedicao) > medicao) {
+
+        int botaonaostate = !digitalRead(4);
+
+        if ((botaonaostate == HIGH) && ultimobotaonao == LOW && pressionado == false) {
+
+            tmppressionado = millis();
+            ultimobotaonao = HIGH;
+        }
+        duracaopress = millis() - tmppressionado;
+        if (botaonaostate == HIGH && pressionado == false && duracaopress > press2seg) {
+            pressionado = true;
+          if(pressionado = true){
+          numerosecreto = 0;
+            pos=1;
+            for (int i = 6; i < 13; i++) {
+        digitalWrite(i, LOW);
+    }
+      }
+        }
+        if (botaonaostate == LOW && ultimobotaonao == HIGH) {
+            ultimobotaonao = LOW;
+            pressionado = false;
+            if (duracaopress < press2seg) {
+                pos++;
+        if (pos < 7) {
+            Serial.println("Sequencia:");
+            for (byte i = 1; i < 128; i++) {
+                if (i & 1 << pos) {
+                    Serial.print(i);
+                    Serial.print(" ");
+                }
+            }
+            Serial.print("\n");
+            Serial.print("O numero esta nesta sequencia?\n");
+        }
+            }
+        }
+        ultimamedicao = millis();
+    }
+    if (pos == 7) {
+        Serial.print("O numero secreto e: ");
+        Serial.print(numerosecreto);
+        Serial.print("\n");
+        pos = -2;
+        delay(400);
+    }
+}
